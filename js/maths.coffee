@@ -1,3 +1,6 @@
+@mod = (x) ->
+	if x > 0 then x else -x
+
 @vectorReflect = (vec, norm, line) ->
 	uvec = unitVector vec
 	magv = magnitude vec
@@ -17,6 +20,22 @@
 
 @pointOnCircle = (rad, ang, cx, cy) ->
 	return [cx + rad * Math.cos(ang), cy + rad * Math.sin(ang)]
+
+@pointOnLineAtDist = (line, dist, cx, cy) ->
+	uvec = unitVector line
+	ret = uvec.map (x) -> x * dist
+	return [ret[0] + cx, ret[1] + cy]
+
+@putInRange = (x, minX, maxX) ->
+	return Math.max (Math.min x, maxX), minX
+
+@polyTranslate = (rect, mx, my) ->
+	rect = rect.map (x, i) -> if i % 2 then x else x + mx
+	return rect.map (y, i) -> if i % 2 then y + my else y
+
+@expandPoly = (poly, x) ->
+	# TO DO: expand polyghon by given value
+	return poly
 
 magnitude = (vec) ->
 	return Math.sqrt (vec.map (x) -> x * x).reduce (x, y) -> x + y
