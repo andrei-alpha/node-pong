@@ -1,4 +1,4 @@
-maxSpeed = 8
+maxSpeed = 6
 
 @getTrack = (ix1, iy1, ix2, iy2, x1, y1, x2, y2) ->
 	# srink the track to actual movable place, eg - pad size
@@ -43,4 +43,3 @@ maxSpeed = 8
 	# move pad polygon and rotate drawing
 	pad.rect = polyTranslate pad.rect, mx, my
 	pad.transform '...T' + mx + ',' + my
-	#console.log 'after', pad.rect, 'track', pad.track	

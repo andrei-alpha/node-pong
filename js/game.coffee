@@ -3,6 +3,7 @@ frames = 50
 Wx = $(window).width()
 Wy = $(window).height()
 rectangles = []
+circle = null
 pads = []
 eps = 0
 
@@ -77,12 +78,29 @@ colide = (rect, ball) ->
 lastT = 0
 
 move = (ball) ->
+	# If is out of the board remove
+	if (distance ball.pos.x, ball.pos.y, circle.cx, circle.cy) > circle.rad
+		ball.remove()
+		initBall()
+		return
+
 	# If it colides update position
 	hit = false
 	for rect in rectangles
 		hit |= colide rect, ball
 	for pad in pads
-		hit |= colide pad.rect, ball
+		if colide pad.rect, ball
+			# increase the ball speed
+			ball.dir.x *= 1.05
+			ball.dir.y *= 1.05
+
+			# glow pad
+			glow = pad.glow()
+			setTimeout (-> 
+				for elem in glow 
+					elem.remove()
+			), 500
+			hit = true
 
 	# Else continue moving
 	if not hit
@@ -106,11 +124,6 @@ move = (ball) ->
 	clearTimeout lastT
 
 board = ->
-	rectangles.push [0, 0, Wx, 0]
-	rectangles.push [0, 0, 0, Wy]
-	rectangles.push [Wx, 0, Wx, Wy]
-	rectangles.push [0, Wy, Wx, Wy]
-
 	circle = (
 		cx: Wx / 2
 		cy: Wy / 2
@@ -133,7 +146,7 @@ board = ->
 
 initBall = ->
 	# Give ball random direction
-	mag2 = 85
+	mag2 = Math.min(Wx, Wy) / 10
 	sx = Math.random() * (mag2 / 2) + mag2 / 4 
 	sy = mag2 - sx
 	sx = Math.sqrt(sx)
@@ -147,11 +160,12 @@ initBall = ->
 
 	pos = {'x': Wx / 2, 'y': Wy / 2}
 	dir = {'x': sx, 'y': sy}
-	return R.ball(10, pos, dir)
+	ball = R.ball(10, pos, dir)
+
+	# start moving the
+	setTimeout (-> move ball), 1000
 
 $(document).ready ->
 	R = Raphael("main")
 	board()
-
-	ball = initBall()
-	move ball
+	initBall()

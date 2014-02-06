@@ -37,6 +37,9 @@
 	# TO DO: expand polyghon by given value
 	return poly
 
+@distance = (x1, y1, x2, y2) ->
+	return Math.sqrt (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)
+
 magnitude = (vec) ->
 	return Math.sqrt (vec.map (x) -> x * x).reduce (x, y) -> x + y
 
