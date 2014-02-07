@@ -18,6 +18,12 @@
 
 	return ret
 
+@vectorNorm = (vec) ->
+	return unitVector [-vec[1], vec[0]]
+
+@vectorReverse = (vec) ->
+	return [-vec[0], -vec[1]]
+
 @pointOnCircle = (rad, ang, cx, cy) ->
 	return [cx + rad * Math.cos(ang), cy + rad * Math.sin(ang)]
 

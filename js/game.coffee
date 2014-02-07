@@ -8,12 +8,12 @@ pads = []
 eps = 0
 
 Raphael.fn.ball = (uid, pos, dir) ->
-	ball = @ellipse(pos.x, pos.y, 15, 15).attr(
+	ball = @ellipse(pos.x, pos.y, 10, 10).attr(
 		stroke: "none"
 		fill: "r(.01,.02) red-black"
 	)
 
-	ball.r = 20
+	ball.r = 10
 	ball.uid = uid
 	ball.dir = dir
 	ball.pos = pos
@@ -29,22 +29,25 @@ Raphael.fn.line = (uid, pos, ang, color) ->
 
 addPad = (ix1, iy1, ix2, iy2) ->
 	# srink pad
-	x1 = ix1 + (ix2 - ix1) / 3
-	x2 = ix2 + (ix1 - ix2) / 3
-	y1 = iy1 + (iy2 - iy1) / 3
-	y2 = iy2 + (iy1 - iy2) / 3
+	x1 = ix1 + (ix2 - ix1) / 2.9
+	x2 = ix2 + (ix1 - ix2) / 2.9
+	y1 = iy1 + (iy2 - iy1) / 2.9
+	y2 = iy2 + (iy1 - iy2) / 2.9
 
 	ang = Math.atan2(y2 - y1, x2 - x1) / Math.PI * 180
 	dist = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
 
-	pad = R.line(1, [x1, y1, dist, 10], ang, 'red')
+	pad = R.line(1, [x1, y1, dist, 10], ang, "red")
 	pad.rect = [x1, y1, x1, y1, x2, y2, x2, y2]
 	pad.outer = [ix1, iy1, ix2, iy2]
 	pad.track = getTrack ix1, iy1, ix2, iy2, x1, y1, x2, y2
+	pad._score = 0
+
+	norm = vectorReverse vectorNorm [ix2 - ix1, iy2 - iy1]
+	pad.score = R.text(ix1 + norm[0] * 10, iy1 + norm[1] * 10, pad._score)
 
 	# use a range [0, 100] for each position on the track
-	pad.pos = 50 
-
+	pad.pos = 50
 	pads.push pad
 
 addRectangle = (x1, y1, x2, y2) ->
@@ -75,11 +78,24 @@ colide = (rect, ball) ->
 		return true
 	return false
 
-lastT = 0
+updateScore = (bpos) ->
+	loser = {'pad': null, 'dist': 999999}
 
+	for pad in pads
+		d1 = distance bpos.x, bpos.y, pad.outer[0], pad.outer[1]
+		d2 = distance bpos.x, bpos.y, pad.outer[2], pad.outer[3]
+
+		if (Math.min d1, d2) < loser.dist
+			loser.pad = pad
+			loser.dist = Math.min d1, d2
+	loser.pad._score += 1
+	loser.pad.score.attr('text', loser.pad._score)
+
+lastT = 0
 move = (ball) ->
 	# If is out of the board remove
 	if (distance ball.pos.x, ball.pos.y, circle.cx, circle.cy) > circle.rad
+		updateScore ball.pos
 		ball.remove()
 		initBall()
 		return
@@ -99,7 +115,7 @@ move = (ball) ->
 			setTimeout (-> 
 				for elem in glow 
 					elem.remove()
-			), 500
+			), 100
 			hit = true
 
 	# Else continue moving
@@ -135,6 +151,7 @@ board = ->
 
 	for p1, i in polys when i < polys.length - 1
 		p2 = polys[i + 1]
+
 		[x1, y1, x2, y2] = [p1[0], p1[1], p2[0], p2[1]]
 		[sx, sy] = [(x2 - x1) / 5, (y2 - y1) / 5]
 		pts = [0, 1, 4, 5].map (x) -> [x1 + sx * x, y1 + sy * x]
@@ -155,8 +172,6 @@ initBall = ->
 		sx *= -1
 	if Math.random() < 0.5
 		sy *= 1
-
-	console.log 'ball speed', sx, sy
 
 	pos = {'x': Wx / 2, 'y': Wy / 2}
 	dir = {'x': sx, 'y': sy}
